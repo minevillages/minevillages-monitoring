@@ -1,7 +1,7 @@
 package baseapi
 
 import (
-	"minevillages/monitoring/api/health"
+	healthapi "minevillages/monitoring/api/health"
 	"minevillages/monitoring/cache"
 	"minevillages/monitoring/json"
 	"minevillages/monitoring/util"
@@ -23,8 +23,8 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 func (HTTPHandler) BackHandler(w http.ResponseWriter, r *http.Request) {
 	var data interface{}
-	if r.URL.Path == "/api/health" {
-		data = health.Health()
+	if r.URL.Path == "/api/health/monitor" {
+		data = healthapi.MointorHealth()
 	}
 	json.WriteWith(data, w)
 }
