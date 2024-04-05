@@ -8,9 +8,13 @@ import (
 
 var EsClient *elastic.Client
 
-func ElasticSearchConnection() {
-	esURL := "http://127.0.0.1:9200"
-	client, err := elastic.NewClient(elastic.SetURL(esURL))
+type ElasticSearch struct {
+	ESUrl string
+}
+
+func (e *ElasticSearch) Connection() {
+
+	client, err := elastic.NewClient(elastic.SetURL(e.ESUrl))
 	if err != nil {
 		log.Fatalf("Failed to create Elasticsearch client: %v", err)
 	}

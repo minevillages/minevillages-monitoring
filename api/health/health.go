@@ -19,30 +19,46 @@ func MointorHealth() HealthStatus {
 	return healthStatus
 }
 
-func ServerHealth(port string, name string) {
-	url := "http://127.0.0.1:" + port
+type ServerInfo struct {
+	Port string
+	Name string
+}
+
+func (s *ServerInfo) Health() {
+	url := "http://127.0.0.1:" + s.Port
 	response, err := http.Get(url)
 
 	if err != nil {
-		log.Println(name + " Server is unhealthy.")
+		log.Println(s.Name + " Server is unhealthy.")
 
 		// Elastic Search 에 로그 저장
 		doc := map[string]interface{}{
-			"SERVER_URL": "http://127.0.0.1:" + port,
+			"SERVER_URL": url,
 		}
-
 		client := db.EsClient
-		_, err = client.Index().Index(name).BodyJson(doc).Do(context.Background())
+		_, err = client.Index().Index(s.Name).BodyJson(doc).Do(context.Background())
 		if err != nil {
 			log.Fatalf("Error indexing document: %v", err)
 		}
 		log.Println("Document indexed successfully to ElasticSearch")
 
-		_, err := db.GetRedis("unhealthy_" + name)
-		if err != nil {
-			db.SetRedis("unhealthy_"+name, port, 1*time.Hour)
-			SendMail("[WARN] Server Unhealthy : "+name, "http://127.0.0.1:"+port)
+		unhealthyGetter := &db.RedisGetter{
+			Key: "unhealthy_" + s.Name,
+		}
+		_, err := unhealthyGetter.Get()
 
+		if err != nil {
+			unhealthySetter := &db.RedisSetter{
+				Key:    "unhealthy_" + s.Name,
+				Value:  url,
+				Expire: 1 * time.Hour,
+			}
+			unhealthySetter.Set()
+			mail := &Mail{
+				Title: "[WARN] Server Unhealthy : " + s.Name,
+				Body:  url,
+			}
+			mail.Send()
 		}
 		return
 	}

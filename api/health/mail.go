@@ -7,19 +7,24 @@ import (
 	"gopkg.in/mail.v2"
 )
 
-func SendMail(title string, body string) {
+type Mail struct {
+	Title string
+	Body  string
+}
+
+func (m *Mail) Send() {
 	mailAddress := os.Getenv("mail_address")
 	mailPassword := os.Getenv("mail_password")
 	mailReceipt := os.Getenv("mail_receipt")
-	m := mail.NewMessage()
-	m.SetHeader("From", mailAddress)
-	m.SetHeader("To", mailReceipt)
-	m.SetHeader("Subject", title)
-	m.SetBody("text/plain", body)
+	mailer := mail.NewMessage()
+	mailer.SetHeader("From", mailAddress)
+	mailer.SetHeader("To", mailReceipt)
+	mailer.SetHeader("Subject", m.Title)
+	mailer.SetBody("text/plain", m.Body)
 	d := mail.NewDialer("smtp.gmail.com", 465, mailAddress, mailPassword)
 
 	// Send the email
-	if err := d.DialAndSend(m); err != nil {
+	if err := d.DialAndSend(mailer); err != nil {
 		log.Fatalf("Failed to send monitor email: %v", err)
 	}
 

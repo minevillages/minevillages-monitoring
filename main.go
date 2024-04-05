@@ -24,8 +24,18 @@ func main() {
 	handler := api.HostRouteHandler{}
 	handler.RegisterHost("127.0.0.1:8080", baseapi.HTTPHandler{})
 
-	db.RedisConnection()
-	db.ElasticSearchConnection()
+	redis := &db.Redis{
+		Addr:     "127.0.0.1:6379",
+		Password: "",
+		DBcount:  0,
+	}
+	redis.Connection()
+
+	elasticSearch := &db.ElasticSearch{
+		ESUrl: "http://127.0.0.1:9200",
+	}
+	elasticSearch.Connection()
+
 	healthapi.TimeSchedule()
 
 	if err := http.ListenAndServe(

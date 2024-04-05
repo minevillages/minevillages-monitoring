@@ -10,12 +10,28 @@ import (
 
 var client *redis.Client
 
-func RedisConnection() {
+type Redis struct {
+	Addr     string
+	Password string
+	DBcount  int
+}
+
+type RedisSetter struct {
+	Key    string
+	Value  string
+	Expire time.Duration
+}
+
+type RedisGetter struct {
+	Key string
+}
+
+func (r *Redis) Connection() {
 	// Connect to Redis server
 	client = redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379", // Redis server address
-		Password: "",               // No password
-		DB:       0,                // Default DB
+		Addr:     r.Addr,
+		Password: r.Password,
+		DB:       r.DBcount,
 	})
 
 	// Ping Redis to ensure connectivity
@@ -29,12 +45,12 @@ func RedisConnection() {
 	}
 }
 
-func SetRedis(key, value string, expire time.Duration) error {
+func (r *RedisSetter) Set() error {
 	ctx := context.Background()
-	return client.Set(ctx, key, value, expire).Err()
+	return client.Set(ctx, r.Key, r.Value, r.Expire).Err()
 }
 
-func GetRedis(key string) (string, error) {
+func (r *RedisGetter) Get() (string, error) {
 	ctx := context.Background()
-	return client.Get(ctx, key).Result()
+	return client.Get(ctx, r.Key).Result()
 }

@@ -9,7 +9,11 @@ func TimeSchedule() {
 	ticker := time.NewTicker(3 * time.Second)
 
 	for range ticker.C {
-		ServerHealth("4000/api/user/health", "user")
+		server := &ServerInfo{
+			Port: "4000/api/user/health",
+			Name: "user",
+		}
+		server.Health()
 	}
 
 }
